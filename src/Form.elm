@@ -43,10 +43,10 @@ type EmailInput
     | EmailValid { value : Result (List EmailError) String }
 
 
-type Form
-    = Form { email : EmailInput, password : PasswordInput }
+type alias Form =
+    { email : EmailInput, password : PasswordInput }
 
 
 init : Form
 init =
-    Form { email = EmailDefaultValue "", password = PasswordDefaultValue "" }
+    Form (EmailDefaultValue "") (PasswordDefaultValue "")
