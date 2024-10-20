@@ -1,6 +1,8 @@
 module Form exposing (..)
 
-import Html exposing (text)
+import Html exposing (Html, form, input, label, text)
+import Html.Attributes exposing (for, id, placeholder, type_, value)
+import Html.Events exposing (onInput, onSubmit)
 
 
 main =
@@ -55,3 +57,14 @@ init =
 type FormUpdate
     = ChangeEmail String
     | ChangePassword String
+
+
+view : Form -> Html FormUpdate
+view model =
+    form []
+        [ label [ for "email" ] [ text "Email" ]
+        , input [ type_ "text", id "email", placeholder "enter your email" ] []
+        , label [ for "password" ] [ text "Password" ]
+        , input [ type_ "text", id "password", placeholder "enter your password" ] []
+        , input [ type_ "submit", value "submit" ] []
+        ]
