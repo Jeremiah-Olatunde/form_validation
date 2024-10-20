@@ -1,0 +1,4 @@
+# source https://github.com/github/gitignore/blob/main/Elm.gitignore
+elm-stuff
+repl-temp-*
+output
