@@ -1,12 +1,13 @@
 module Form exposing (..)
 
+import Browser
 import Html exposing (Html, form, input, label, text)
 import Html.Attributes exposing (for, id, placeholder, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 
 
 main =
-    text "hello world"
+    Browser.sandbox { init = init, view = view, update = update }
 
 
 type alias Credentials =
