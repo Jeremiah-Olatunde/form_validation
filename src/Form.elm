@@ -50,3 +50,8 @@ type alias Form =
 init : Form
 init =
     Form (EmailDefaultValue "") (PasswordDefaultValue "")
+
+
+type Message
+    = ChangeEmail String
+    | ChangePassword String
