@@ -52,6 +52,6 @@ init =
     Form (EmailDefaultValue "") (PasswordDefaultValue "")
 
 
-type Message
+type FormUpdate
     = ChangeEmail String
     | ChangePassword String
