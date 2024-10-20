@@ -2,7 +2,7 @@ module Form exposing (..)
 
 import Browser
 import Html exposing (Html, form, input, label, text)
-import Html.Attributes exposing (for, id, placeholder, type_, value)
+import Html.Attributes exposing (for, id, placeholder, readonly, style, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 
 
@@ -83,7 +83,30 @@ viewEmailLabel =
 
 viewEmailInput : EmailInput -> Html FormUpdate
 viewEmailInput email =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email" ] []
+    case email of
+        Empty default ->
+            viewEmailInputEmpty default
+
+        Valid data ->
+            viewEmailInputValid data
+
+        Invalid data errors ->
+            viewEmailInputInvalid data errors
+
+
+viewEmailInputEmpty : String -> Html FormUpdate
+viewEmailInputEmpty default =
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value default ] []
+
+
+viewEmailInputValid : String -> Html FormUpdate
+viewEmailInputValid data =
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)", readonly True ] []
+
+
+viewEmailInputInvalid : String -> List EmailError -> Html FormUpdate
+viewEmailInputInvalid data errors =
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)", readonly True ] []
 
 
 viewPasswordLabel : Html FormUpdate
@@ -93,7 +116,30 @@ viewPasswordLabel =
 
 viewPasswordInput : PasswordInput -> Html FormUpdate
 viewPasswordInput password =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password" ] []
+    case password of
+        Empty default ->
+            viewPasswordInputEmpty default
+
+        Valid data ->
+            viewPasswordInputValid data
+
+        Invalid data errors ->
+            viewPasswordInputInvalid data errors
+
+
+viewPasswordInputEmpty : String -> Html FormUpdate
+viewPasswordInputEmpty default =
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value default ] []
+
+
+viewPasswordInputValid : String -> Html FormUpdate
+viewPasswordInputValid data =
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)", readonly True ] []
+
+
+viewPasswordInputInvalid : String -> List PasswordError -> Html FormUpdate
+viewPasswordInputInvalid data errors =
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)", readonly True ] []
 
 
 viewSubmitInput : Html FormUpdate
