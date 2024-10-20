@@ -58,15 +58,16 @@ init =
 type FormUpdate
     = ChangeEmail String
     | ChangePassword String
+    | Submit
 
 
 view : Form -> Html FormUpdate
 view model =
     form []
         [ label [ for "email" ] [ text "Email" ]
-        , input [ type_ "text", id "email", placeholder "enter your email" ] []
+        , input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email" ] []
         , label [ for "password" ] [ text "Password" ]
-        , input [ type_ "text", id "password", placeholder "enter your password" ] []
+        , input [ onInput ChangePassword type_ "text", id "password", placeholder "enter your password" ] []
         , input [ type_ "submit", value "submit" ] []
         ]
 
