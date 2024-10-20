@@ -16,9 +16,9 @@ type alias Credentials =
 
 database : List Credentials
 database =
-    [ Credentials "jeremiah@jmail.com" "jeremiah"
-    , Credentials "roman@rmail.com" "roman"
+    [ Credentials "roman@rmail.com" "roman"
     , Credentials "bun_bun@bmail.com" "bun_bun"
+    , Credentials "jeremiah@jmail.com" "jeremiah"
     ]
 
 
@@ -31,19 +31,23 @@ type PasswordError
     | PasswordHasNoCapitalLetters
 
 
-type PasswordInput
-    = PasswordDefaultValue String
-    | PasswordValid { value : Result (List PasswordError) String }
-
-
 type EmailError
     = EmailEmpty
     | EmailInvalid
 
 
-type EmailInput
-    = EmailDefaultValue String
-    | EmailValid { value : Result (List EmailError) String }
+type FormInput error
+    = Empty String
+    | Valid String
+    | Invalid (List error)
+
+
+type alias EmailInput =
+    FormInput EmailError
+
+
+type alias PasswordInput =
+    FormInput PasswordError
 
 
 type alias Form =
@@ -52,7 +56,7 @@ type alias Form =
 
 init : Form
 init =
-    Form (EmailDefaultValue "") (PasswordDefaultValue "")
+    Form (Empty "") (Empty "")
 
 
 type FormUpdate
