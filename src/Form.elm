@@ -39,7 +39,7 @@ type EmailError
 type FormInput error
     = Empty String
     | Valid String
-    | Invalid (List error)
+    | Invalid String (List error)
 
 
 type alias EmailInput =
