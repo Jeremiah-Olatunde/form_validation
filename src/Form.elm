@@ -68,3 +68,8 @@ view model =
         , input [ type_ "text", id "password", placeholder "enter your password" ] []
         , input [ type_ "submit", value "submit" ] []
         ]
+
+
+update : FormUpdate -> Form -> Form
+update message model =
+    model
