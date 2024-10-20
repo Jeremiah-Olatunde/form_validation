@@ -62,14 +62,39 @@ type FormUpdate
 
 
 view : Form -> Html FormUpdate
-view model =
+view { email, password } =
     form []
-        [ label [ for "email" ] [ text "Email" ]
-        , input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email" ] []
-        , label [ for "password" ] [ text "Password" ]
-        , input [ onInput ChangePassword type_ "text", id "password", placeholder "enter your password" ] []
-        , input [ type_ "submit", value "submit" ] []
+        [ viewEmailLabel
+        , viewEmailInput email
+        , viewPasswordLabel
+        , viewPasswordInput password
+        , viewSubmitInput
         ]
+
+
+viewEmailLabel : Html FormUpdate
+viewEmailLabel =
+    label [ for "email" ] [ text "Email" ]
+
+
+viewEmailInput : EmailInput -> Html FormUpdate
+viewEmailInput email =
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email" ] []
+
+
+viewPasswordLabel : Html FormUpdate
+viewPasswordLabel =
+    label [ for "password" ] [ text "Password" ]
+
+
+viewPasswordInput : PasswordInput -> Html FormUpdate
+viewPasswordInput password =
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password" ] []
+
+
+viewSubmitInput : Html FormUpdate
+viewSubmitInput =
+    input [ onSubmit Submit, type_ "submit", value "submit" ] []
 
 
 update : FormUpdate -> Form -> Form
