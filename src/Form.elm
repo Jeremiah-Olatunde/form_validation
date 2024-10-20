@@ -1,13 +1,19 @@
 module Form exposing (..)
 
 import Browser
-import Html exposing (Html, form, input, label, text)
+import Html exposing (Html, br, form, input, label, text)
 import Html.Attributes exposing (for, id, placeholder, readonly, style, type_, value)
 import Html.Events exposing (onInput, onSubmit)
 
 
 main =
     Browser.sandbox { init = init, view = view, update = update }
+
+
+
+-------------------------------------------------------------------------------
+-- DATA
+-------------------------------------------------------------------------------
 
 
 type alias Credentials =
@@ -20,6 +26,12 @@ database =
     , Credentials "bun_bun@bmail.com" "bun_bun"
     , Credentials "jeremiah@jmail.com" "jeremiah"
     ]
+
+
+
+-------------------------------------------------------------------------------
+-- MODELING
+-------------------------------------------------------------------------------
 
 
 type PasswordError
@@ -54,24 +66,44 @@ type alias Form =
     { email : EmailInput, password : PasswordInput }
 
 
-init : Form
-init =
-    Form (Empty "") (Empty "")
-
-
 type FormUpdate
     = ChangeEmail String
     | ChangePassword String
     | Submit
 
 
+
+-- -- Other FormInput variants
+--init : Form
+--init =
+--    Form (Invalid "invalid@email.com" [ EmailEmpty ]) (Invalid "invalid_password" [ PasswordToLong ])
+--init : Form
+--init =
+--    Form (Valid "valid@email.com") (Valid "valid_password")
+
+
+init : Form
+init =
+    Form (Empty "") (Empty "")
+
+
+
+-------------------------------------------------------------------------------
+-- VIEW
+-------------------------------------------------------------------------------
+
+
 view : Form -> Html FormUpdate
 view { email, password } =
     form []
         [ viewEmailLabel
+        , br [] []
         , viewEmailInput email
+        , br [] []
         , viewPasswordLabel
+        , br [] []
         , viewPasswordInput password
+        , br [] []
         , viewSubmitInput
         ]
 
@@ -147,6 +179,16 @@ viewSubmitInput =
     input [ onSubmit Submit, type_ "submit", value "submit" ] []
 
 
+
+-------------------------------------------------------------------------------
+-- UPDATE
+-------------------------------------------------------------------------------
+
+
 update : FormUpdate -> Form -> Form
 update message model =
     model
+
+
+
+-------------------------------------------------------------------------------
