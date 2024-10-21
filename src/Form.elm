@@ -50,6 +50,7 @@ type EmailError
 
 type FormInput error
     = Empty String
+    | Unvalidated String
     | Valid String
     | Invalid String (List error)
 
@@ -117,7 +118,7 @@ viewEmailInput : EmailInput -> Html FormUpdate
 viewEmailInput email =
     case email of
         Empty default ->
-            viewEmailInputEmpty default
+            viewEmailInputDefault default
 
         Valid data ->
             viewEmailInputValid data
@@ -125,10 +126,13 @@ viewEmailInput email =
         Invalid data errors ->
             viewEmailInputInvalid data errors
 
+        Unvalidated data ->
+            viewEmailInputDefault data
 
-viewEmailInputEmpty : String -> Html FormUpdate
-viewEmailInputEmpty default =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value default ] []
+
+viewEmailInputDefault : String -> Html FormUpdate
+viewEmailInputDefault data =
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data ] []
 
 
 viewEmailInputValid : String -> Html FormUpdate
@@ -150,7 +154,7 @@ viewPasswordInput : PasswordInput -> Html FormUpdate
 viewPasswordInput password =
     case password of
         Empty default ->
-            viewPasswordInputEmpty default
+            viewPasswordInputDefault default
 
         Valid data ->
             viewPasswordInputValid data
@@ -158,10 +162,13 @@ viewPasswordInput password =
         Invalid data errors ->
             viewPasswordInputInvalid data errors
 
+        Unvalidated data ->
+            viewPasswordInputDefault data
 
-viewPasswordInputEmpty : String -> Html FormUpdate
-viewPasswordInputEmpty default =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value default ] []
+
+viewPasswordInputDefault : String -> Html FormUpdate
+viewPasswordInputDefault data =
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data ] []
 
 
 viewPasswordInputValid : String -> Html FormUpdate
@@ -187,7 +194,15 @@ viewSubmitInput =
 
 update : FormUpdate -> Form -> Form
 update message model =
-    model
+    case message of
+        ChangeEmail email ->
+            { model | email = Unvalidated email }
+
+        ChangePassword password ->
+            { model | password = Unvalidated password }
+
+        Submit ->
+            model
 
 
 
