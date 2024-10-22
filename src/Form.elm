@@ -39,7 +39,7 @@ type PasswordError
     = PasswordEmpty
     | PasswordToShort
     | PasswordToLong
-    | PasswordHasNoSpecialCharacters
+    | PasswordHasNoSymbols
     | PasswordHasNoNumbers
     | PasswordHasNoCapitalLetters
 
@@ -224,14 +224,60 @@ inputToString formInput =
 
 validatePassword : String -> FormInput PasswordError
 validatePassword password =
-    if String.length password < 5 then
-        Invalid password [ PasswordToShort ]
-
-    else if 10 < String.length password then
-        Invalid password [ PasswordToLong ]
+    let
+        errors =
+            []
+                |> passwordHasNumber password
+                |> passwordHasSymbol password
+                |> passwordHasCapitalLetter password
+    in
+    if List.isEmpty errors then
+        Valid password
 
     else
-        Valid password
+        Invalid password errors
+
+
+passwordHasNumber : String -> List PasswordError -> List PasswordError
+passwordHasNumber password errors =
+    if not (containsNumber password) then
+        PasswordHasNoNumbers :: errors
+
+    else
+        errors
+
+
+passwordHasSymbol : String -> List PasswordError -> List PasswordError
+passwordHasSymbol password errors =
+    if not (containsSymbol password) then
+        PasswordHasNoSymbols :: errors
+
+    else
+        errors
+
+
+passwordHasCapitalLetter : String -> List PasswordError -> List PasswordError
+passwordHasCapitalLetter password errors =
+    if not (containsCapitalLetter password) then
+        PasswordHasNoCapitalLetters :: errors
+
+    else
+        errors
+
+
+containsNumber : String -> Bool
+containsNumber =
+    Regex.contains (Maybe.withDefault Regex.never <| Regex.fromString "[0-9]")
+
+
+containsCapitalLetter : String -> Bool
+containsCapitalLetter =
+    Regex.contains (Maybe.withDefault Regex.never <| Regex.fromString "[A-Z]")
+
+
+containsSymbol : String -> Bool
+containsSymbol =
+    Regex.contains (Maybe.withDefault Regex.never <| Regex.fromString "[!@#$%^&*()]")
 
 
 
