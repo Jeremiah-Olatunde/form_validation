@@ -1,7 +1,7 @@
 module Form exposing (..)
 
 import Browser
-import Html exposing (Html, br, button, div, form, input, label, text)
+import Html exposing (Html, br, button, div, form, input, label, li, text, ul)
 import Html.Attributes exposing (for, id, placeholder, readonly, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Regex
@@ -138,12 +138,12 @@ viewEmailInputDefault data =
 
 viewEmailInputValid : String -> Html FormUpdate
 viewEmailInputValid data =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)", readonly True ] []
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)" ] []
 
 
 viewEmailInputInvalid : String -> List EmailError -> Html FormUpdate
 viewEmailInputInvalid data errors =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)", readonly True ] []
+    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
 
 
 viewPasswordLabel : Html FormUpdate
@@ -174,12 +174,38 @@ viewPasswordInputDefault data =
 
 viewPasswordInputValid : String -> Html FormUpdate
 viewPasswordInputValid data =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)", readonly True ] []
+    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)" ] []
 
 
 viewPasswordInputInvalid : String -> List PasswordError -> Html FormUpdate
 viewPasswordInputInvalid data errors =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)", readonly True ] []
+    div []
+        [ input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
+        , ul []
+            (errors |> List.map viewPasswordError)
+        ]
+
+
+viewPasswordError : PasswordError -> Html FormUpdate
+viewPasswordError error =
+    case error of
+        PasswordEmpty ->
+            li [] [ text "password can not be empty" ]
+
+        PasswordToShort ->
+            li [] [ text "password must be greater than 5 characters" ]
+
+        PasswordToLong ->
+            li [] [ text "password must be less than 10 characters" ]
+
+        PasswordHasNoSymbols ->
+            li [] [ text "password must contain at least one symbol" ]
+
+        PasswordHasNoNumbers ->
+            li [] [ text "password must contain at least one number" ]
+
+        PasswordHasNoCapitalLetters ->
+            li [] [ text "password must contain at least one capital letter" ]
 
 
 viewSubmitInput : Html FormUpdate
@@ -227,6 +253,8 @@ validatePassword password =
     let
         errors =
             []
+                |> passwordIsLongEnough password
+                |> passwordIsShortEnough password
                 |> passwordHasNumber password
                 |> passwordHasSymbol password
                 |> passwordHasCapitalLetter password
@@ -236,6 +264,24 @@ validatePassword password =
 
     else
         Invalid password errors
+
+
+passwordIsShortEnough : String -> List PasswordError -> List PasswordError
+passwordIsShortEnough password errors =
+    if String.length password > 10 then
+        PasswordToLong :: errors
+
+    else
+        errors
+
+
+passwordIsLongEnough : String -> List PasswordError -> List PasswordError
+passwordIsLongEnough password errors =
+    if String.length password < 5 then
+        PasswordToShort :: errors
+
+    else
+        errors
 
 
 passwordHasNumber : String -> List PasswordError -> List PasswordError
