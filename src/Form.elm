@@ -203,7 +203,7 @@ update message model =
             { model | password = Unvalidated password }
 
         Submit ->
-            model
+            { model | password = validatePassword <| inputToString <| .password model }
 
 
 inputToString : FormInput a -> String
@@ -220,6 +220,18 @@ inputToString formInput =
 
         Unvalidated data ->
             data
+
+
+validatePassword : String -> FormInput PasswordError
+validatePassword password =
+    if String.length password < 5 then
+        Invalid password [ PasswordToShort ]
+
+    else if 10 < String.length password then
+        Invalid password [ PasswordToLong ]
+
+    else
+        Valid password
 
 
 
