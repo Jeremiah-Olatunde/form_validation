@@ -85,6 +85,10 @@ type alias Form =
     { email : EmailInput, password : PasswordInput }
 
 
+type alias ValidatedForm =
+    Result Form Credentials
+
+
 
 {--
     FormUpdate is the message type
@@ -322,6 +326,28 @@ inputToString formInput =
 
         Unvalidated data ->
             data
+
+
+validateForm : Form -> ValidatedForm
+validateForm { email, password } =
+    let
+        validatedEmail =
+            validateEmail <| inputToString <| email
+
+        validatedPassword =
+            validatePassword <| inputToString <| password
+    in
+    case validatedEmail of
+        Valid e ->
+            case validatedPassword of
+                Valid p ->
+                    Ok { email = e, password = p }
+
+                _ ->
+                    Err { email = validatedEmail, password = validatedPassword }
+
+        _ ->
+            Err { email = validatedEmail, password = validatedPassword }
 
 
 validatePassword : String -> FormInput PasswordError
