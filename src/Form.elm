@@ -213,6 +213,22 @@ viewSubmitInput =
     button [ onClick Submit ] [ text "submit" ]
 
 
+inputReplaceValue : String -> FormInput a -> FormInput a
+inputReplaceValue value formInput =
+    case formInput of
+        Empty _ ->
+            Empty value
+
+        Valid _ ->
+            Valid value
+
+        Unvalidated _ ->
+            Unvalidated value
+
+        Invalid _ errors ->
+            Invalid value errors
+
+
 
 -------------------------------------------------------------------------------
 -- UPDATE
@@ -223,10 +239,10 @@ update : FormUpdate -> Form -> Form
 update message model =
     case message of
         ChangeEmail email ->
-            { model | email = Unvalidated email }
+            { model | email = inputReplaceValue email (.email model) }
 
         ChangePassword password ->
-            { model | password = Unvalidated password }
+            { model | password = inputReplaceValue password (.password model) }
 
         Submit ->
             { model | password = validatePassword <| inputToString <| .password model }
