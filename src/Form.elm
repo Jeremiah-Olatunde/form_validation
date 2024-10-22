@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, br, form, input, label, text)
 import Html.Attributes exposing (for, id, placeholder, readonly, style, type_, value)
 import Html.Events exposing (onInput, onSubmit)
+import Regex
 
 
 main =
@@ -203,6 +204,22 @@ update message model =
 
         Submit ->
             model
+
+
+inputToString : FormInput a -> String
+inputToString formInput =
+    case formInput of
+        Empty data ->
+            data
+
+        Valid data ->
+            data
+
+        Invalid data _ ->
+            data
+
+        Unvalidated data ->
+            data
 
 
 
