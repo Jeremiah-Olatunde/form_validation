@@ -8,7 +8,11 @@ import Regex
 
 
 main =
-    Browser.sandbox { init = init, view = view, update = update }
+    Browser.sandbox
+        { init = Form (Empty "") (Empty "")
+        , view = view
+        , update = update
+        }
 
 
 
@@ -33,6 +37,26 @@ database =
 -------------------------------------------------------------------------------
 -- MODELING
 -------------------------------------------------------------------------------
+{--
+    different inputs have different errors
+    hence form input is parameterized over error
+
+    each variant contains a value
+    for Empty the value is the default
+    for all other variants it is the value inputed by the user
+
+    the invalid variant also contains a list of error specific to an input field
+
+    consider parameterizing over input type (e.g text, password)
+    perhaps it would make more sense to have different types for each input type (e.g FormInputText, FormInputPassword)
+--}
+
+
+type FormInput error
+    = Empty String -- default value
+    | Unvalidated String
+    | Valid String
+    | Invalid String (List error)
 
 
 type PasswordError
@@ -49,13 +73,6 @@ type EmailError
     | EmailInvalid
 
 
-type FormInput error
-    = Empty String
-    | Unvalidated String
-    | Valid String
-    | Invalid String (List error)
-
-
 type alias EmailInput =
     FormInput EmailError
 
@@ -68,25 +85,24 @@ type alias Form =
     { email : EmailInput, password : PasswordInput }
 
 
+
+{--
+    FormUpdate is the message type
+
+    since the goal is to model server side form validation, validation will only occur on the Sumbit message
+    this message would be analogous to sending a http request with the form data as the body
+
+    ChangeEmail and ChangePassword are required to actually input the data into the field in elm
+    and do not currently model anything ssr related
+
+    but the could be used to model live server side validation on user input
+--}
+
+
 type FormUpdate
     = ChangeEmail String
     | ChangePassword String
     | Submit
-
-
-
--- -- Other FormInput variants
---init : Form
---init =
---    Form (Invalid "invalid@email.com" [ EmailEmpty ]) (Invalid "invalid_password" [ PasswordToLong ])
---init : Form
---init =
---    Form (Valid "valid@email.com") (Valid "valid_password")
-
-
-init : Form
-init =
-    Form (Empty "") (Empty "")
 
 
 
@@ -108,6 +124,13 @@ view { email, password } =
         , br [] []
         , viewSubmitInput
         ]
+
+
+
+-- Choose which view to render based on the variant
+-- note the similarities between the views in the email input and the password input
+-- the differing values are the type, id, placeholder, the label text and data
+-- the similarites would be significantly more between say an email input and a slider input
 
 
 viewEmailLabel : Html FormUpdate
@@ -143,7 +166,20 @@ viewEmailInputValid data =
 
 viewEmailInputInvalid : String -> List EmailError -> Html FormUpdate
 viewEmailInputInvalid data errors =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
+    div []
+        [ input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
+        , ul [] (List.map viewEmailError errors)
+        ]
+
+
+viewEmailError : EmailError -> Html FormUpdate
+viewEmailError error =
+    case error of
+        EmailEmpty ->
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "email can not be empty" ]
+
+        EmailInvalid ->
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "email is not valid" ]
 
 
 viewPasswordLabel : Html FormUpdate
@@ -181,31 +217,34 @@ viewPasswordInputInvalid : String -> List PasswordError -> Html FormUpdate
 viewPasswordInputInvalid data errors =
     div []
         [ input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
-        , ul []
-            (errors |> List.map viewPasswordError)
+        , ul [] (List.map viewPasswordError errors)
         ]
+
+
+
+-- covert a password error to the li item element
 
 
 viewPasswordError : PasswordError -> Html FormUpdate
 viewPasswordError error =
     case error of
         PasswordEmpty ->
-            li [] [ text "password can not be empty" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password can not be empty" ]
 
         PasswordToShort ->
-            li [] [ text "password must be greater than 5 characters" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password must be greater than 5 characters" ]
 
         PasswordToLong ->
-            li [] [ text "password must be less than 10 characters" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password must be less than 10 characters" ]
 
         PasswordHasNoSymbols ->
-            li [] [ text "password must contain at least one symbol" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password must contain at least one symbol" ]
 
         PasswordHasNoNumbers ->
-            li [] [ text "password must contain at least one number" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password must contain at least one number" ]
 
         PasswordHasNoCapitalLetters ->
-            li [] [ text "password must contain at least one capital letter" ]
+            li [ style "color" "rgb(255, 0, 0)" ] [ text "password must contain at least one capital letter" ]
 
 
 viewSubmitInput : Html FormUpdate
@@ -213,11 +252,20 @@ viewSubmitInput =
     button [ onClick Submit ] [ text "submit" ]
 
 
+
+-- maintain the state of the input as the user updates the value
+-- i.e if a password input is (Invalid value old_error) when the user types in the input
+-- and the ChangePassword new_input event is dispacted to the update
+-- return (Invalid new_input old_errors)
+-- note that if an input was originally Empty value, Unvalidated new_value is returned
+-- modeling the fact that once an input is edited it is not considered empty
+
+
 inputReplaceValue : String -> FormInput a -> FormInput a
 inputReplaceValue value formInput =
     case formInput of
         Empty _ ->
-            Empty value
+            Unvalidated value
 
         Valid _ ->
             Valid value
@@ -236,16 +284,28 @@ inputReplaceValue value formInput =
 
 
 update : FormUpdate -> Form -> Form
-update message model =
+update message { email, password } =
     case message of
-        ChangeEmail email ->
-            { model | email = inputReplaceValue email (.email model) }
+        ChangeEmail newValue ->
+            { email = inputReplaceValue newValue email
+            , password = password
+            }
 
-        ChangePassword password ->
-            { model | password = inputReplaceValue password (.password model) }
+        ChangePassword newValue ->
+            { email = email
+            , password = inputReplaceValue newValue password
+            }
 
         Submit ->
-            { model | password = validatePassword <| inputToString <| .password model }
+            { email = validateEmail <| inputToString <| email
+            , password = validatePassword <| inputToString <| password
+            }
+
+
+
+-- all the variants have a similar structure i.e Variant data
+-- there must be some operation to take advantage of this to extract the data
+-- for now this is fine
 
 
 inputToString : FormInput a -> String
@@ -269,6 +329,7 @@ validatePassword password =
     let
         errors =
             []
+                |> passwordIsNotEmpty password
                 |> passwordIsLongEnough password
                 |> passwordIsShortEnough password
                 |> passwordHasNumber password
@@ -340,6 +401,51 @@ containsCapitalLetter =
 containsSymbol : String -> Bool
 containsSymbol =
     Regex.contains (Maybe.withDefault Regex.never <| Regex.fromString "[!@#$%^&*()]")
+
+
+passwordIsNotEmpty : String -> List PasswordError -> List PasswordError
+passwordIsNotEmpty password errors =
+    if not (String.isEmpty password) then
+        errors
+
+    else
+        PasswordEmpty :: errors
+
+
+validateEmail : String -> FormInput EmailError
+validateEmail email =
+    let
+        errors =
+            [] |> emailIsNotEmpty email |> matchesEmailRegex email
+    in
+    if List.isEmpty errors then
+        Valid email
+
+    else
+        Invalid email errors
+
+
+emailIsNotEmpty : String -> List EmailError -> List EmailError
+emailIsNotEmpty email errors =
+    if not (String.isEmpty email) then
+        errors
+
+    else
+        EmailEmpty :: errors
+
+
+matchesEmailRegex : String -> List EmailError -> List EmailError
+matchesEmailRegex email errors =
+    if isValidEmail email then
+        errors
+
+    else
+        EmailInvalid :: errors
+
+
+isValidEmail : String -> Bool
+isValidEmail =
+    Regex.contains (Maybe.withDefault Regex.never <| Regex.fromString "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
 
 
 
