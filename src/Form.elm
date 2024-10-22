@@ -1,9 +1,9 @@
 module Form exposing (..)
 
 import Browser
-import Html exposing (Html, br, form, input, label, text)
+import Html exposing (Html, br, button, div, form, input, label, text)
 import Html.Attributes exposing (for, id, placeholder, readonly, style, type_, value)
-import Html.Events exposing (onInput, onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Regex
 
 
@@ -97,7 +97,7 @@ init =
 
 view : Form -> Html FormUpdate
 view { email, password } =
-    form []
+    div []
         [ viewEmailLabel
         , br [] []
         , viewEmailInput email
@@ -184,7 +184,7 @@ viewPasswordInputInvalid data errors =
 
 viewSubmitInput : Html FormUpdate
 viewSubmitInput =
-    input [ onSubmit Submit, type_ "submit", value "submit" ] []
+    button [ onClick Submit ] [ text "submit" ]
 
 
 
