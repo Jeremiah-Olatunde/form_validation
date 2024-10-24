@@ -160,18 +160,46 @@ viewEmailInput email =
 
 viewEmailInputDefault : String -> Html FormUpdate
 viewEmailInputDefault data =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data ] []
+    input
+        [ onInput ChangeEmail
+        , type_ "text"
+        , id "email"
+        , placeholder "enter your email"
+        , value data
+        ]
+        []
 
 
 viewEmailInputValid : String -> Html FormUpdate
 viewEmailInputValid data =
-    input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)" ] []
+    input
+        [ onInput ChangeEmail
+        , type_ "text"
+        , id "email"
+        , placeholder "enter your email"
+        , value data
+        , style "border" "3px solid rgb(0, 255, 0)"
+        , style "background" "rgba(0, 255, 0, 0.2)"
+        , style "color" "rgb(0, 255, 0)"
+        ]
+        []
 
 
 viewEmailInputInvalid : String -> List EmailError -> Html FormUpdate
 viewEmailInputInvalid data errors =
-    div []
-        [ input [ onInput ChangeEmail, type_ "text", id "email", placeholder "enter your email", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
+    div
+        []
+        [ input
+            [ value data
+            , onInput ChangeEmail
+            , id "email"
+            , type_ "text"
+            , placeholder "enter your email"
+            , style "color" "rgb(255, 0, 0)"
+            , style "border" "3px solid rgb(255, 0, 0)"
+            , style "background" "rgba(255, 0, 0, 0.2)"
+            ]
+            []
         , ul [] (List.map viewEmailError errors)
         ]
 
@@ -209,18 +237,46 @@ viewPasswordInput password =
 
 viewPasswordInputDefault : String -> Html FormUpdate
 viewPasswordInputDefault data =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data ] []
+    input
+        [ onInput ChangePassword
+        , type_ "text"
+        , id "password"
+        , placeholder "enter your password"
+        , value data
+        ]
+        []
 
 
 viewPasswordInputValid : String -> Html FormUpdate
 viewPasswordInputValid data =
-    input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(0, 255, 0)", style "background" "rgba(0, 255, 0, 0.2)", style "color" "rgb(0, 255, 0)" ] []
+    input
+        [ onInput ChangePassword
+        , type_ "text"
+        , id "password"
+        , placeholder "enter your password"
+        , value data
+        , style "border" "3px solid rgb(0, 255, 0)"
+        , style "background" "rgba(0, 255, 0, 0.2)"
+        , style "color" "rgb(0, 255, 0)"
+        ]
+        []
 
 
 viewPasswordInputInvalid : String -> List PasswordError -> Html FormUpdate
 viewPasswordInputInvalid data errors =
-    div []
-        [ input [ onInput ChangePassword, type_ "text", id "password", placeholder "enter your password", value data, style "border" "3px solid rgb(255, 0, 0)", style "background" "rgba(255, 0, 0, 0.2)", style "color" "rgb(255, 0, 0)" ] []
+    div
+        []
+        [ input
+            [ onInput ChangePassword
+            , type_ "text"
+            , id "password"
+            , placeholder "enter your password"
+            , value data
+            , style "border" "3px solid rgb(255, 0, 0)"
+            , style "background" "rgba(255, 0, 0, 0.2)"
+            , style "color" "rgb(255, 0, 0)"
+            ]
+            []
         , ul [] (List.map viewPasswordError errors)
         ]
 
@@ -332,10 +388,14 @@ validateForm : Form -> ValidatedForm
 validateForm { email, password } =
     let
         validatedEmail =
-            validateEmail <| inputToString <| email
+            email
+                |> inputToString
+                |> validateEmail
 
         validatedPassword =
-            validatePassword <| inputToString <| password
+            password
+                |> inputToString
+                |> validatePassword
     in
     case validatedEmail of
         Valid e ->
@@ -442,7 +502,9 @@ validateEmail : String -> FormInput EmailError
 validateEmail email =
     let
         errors =
-            [] |> emailIsNotEmpty email |> matchesEmailRegex email
+            []
+                |> emailIsNotEmpty email
+                |> matchesEmailRegex email
     in
     if List.isEmpty errors then
         Valid email
